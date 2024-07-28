@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom styles */
+
 body {
   @apply bg-black text-white;
+}
+
+/* Neon border and glass effect styles */
+.neon-border {
+  background: linear-gradient(
+    250deg,
+    rgba(0, 255, 255, 0.3),
+    rgba(0, 0, 255, 0.3)
+  );
+  border-radius: inherit;
+  filter: blur(90px);
+  transition: box-shadow 0.5s ease-in-out;
+}
+
+.relative:hover .neon-border {
+  box-shadow: 0 0 2px rgba(0, 255, 255, 0.7), 0 0 40px rgba(0, 255, 255, 0.7),
+    0 0 5px rgba(0, 255, 255, 0.7), 0 0 10px rgba(0, 255, 255, 0.7);
 }

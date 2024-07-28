@@ -15,6 +15,10 @@ const config: Config = {
         "hero-pattern": "url('/path-to-your-hero-image.jpg')",
       },
     },
+    backdropFilter: {
+      none: "none",
+      blur: "blur(20px)",
+    },
   },
   plugins: [],
 };
