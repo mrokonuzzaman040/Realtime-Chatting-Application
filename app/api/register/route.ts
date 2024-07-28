@@ -8,56 +8,61 @@ import dotenv from "dotenv";
 dotenv.config(); // Ensure environment variables are loaded
 
 export async function POST(req: Request) {
-  try {
-    const { username, email, password, confirmPassword, dateOfBirth } =
-      await req.json();
+  const { username, email, password, confirmPassword, dateOfBirth } =
+    await req.json();
 
-    // Validate the input fields
-    if (!username || !email || !password || !confirmPassword || !dateOfBirth) {
-      return NextResponse.json(
-        { message: "All fields are required" },
-        { status: 400 }
-      );
-    }
+  // Validate the input fields
+  if (!username || !email || !password || !confirmPassword || !dateOfBirth) {
+    return NextResponse.json(
+      { message: "All fields are required" },
+      { status: 400 }
+    );
+  }
 
-    // Check if passwords match
-    if (password !== confirmPassword) {
-      return NextResponse.json(
-        { message: "Passwords do not match" },
-        { status: 400 }
-      );
-    }
+  // Check if passwords match
+  if (password !== confirmPassword) {
+    return NextResponse.json(
+      { message: "Passwords do not match" },
+      { status: 400 }
+    );
+  }
 
-    await dbConnect();
+  await dbConnect();
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return NextResponse.json(
-        { message: "User already exists" },
-        { status: 409 }
-      );
-    }
+  // Check if user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return NextResponse.json(
+      { message: "User already exists" },
+      { status: 409 }
+    );
+  }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+  // Hash the password
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create verification code
-    const verificationCode = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
+  // Create verification code
+  const verificationCode = Math.floor(
+    100000 + Math.random() * 900000
+  ).toString();
 
-    // Create new user
-    const newUser = new User({
+  // Create new user
+  const data = new User({
+    email,
+    password: hashedPassword,
+    profile: {
       username,
-      email,
-      password: hashedPassword,
       dateOfBirth,
       verificationCode,
       isVerified: false,
-    });
+    },
+  });
+  try {
+    console.log("Before save:", data.toObject());
 
-    await newUser.save();
+    const savedUser = await data.save();
+
+    console.log("After save:", savedUser.toObject());
 
     // Send verification email
     const transporter = nodemailer.createTransport({
@@ -146,7 +151,7 @@ export async function POST(req: Request) {
     await transporter.sendMail(mailOptions);
 
     return NextResponse.json(
-      { message: "User created", userId: newUser._id },
+      { message: "User created", userId: savedUser._id },
       { status: 201 }
     );
   } catch (error: any) {
