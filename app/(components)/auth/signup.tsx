@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, ChangeEvent, FormEvent } from "react";
+import axios from "axios";
 import { SignUpFormData, SignUpFormErrors } from "@/types/signup";
+import { useRouter } from "next/navigation";
 
 const SignUpForm = () => {
     const [formData, setFormData] = useState<SignUpFormData>({
@@ -13,6 +15,8 @@ const SignUpForm = () => {
     });
 
     const [errors, setErrors] = useState<SignUpFormErrors>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const router = useRouter();
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setFormData({
@@ -32,15 +36,27 @@ const SignUpForm = () => {
         return formErrors;
     };
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const validationErrors = validateForm();
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
         } else {
-            // Submit the form (e.g., send data to API)
-            console.log("Form data submitted:", formData);
-            setErrors({});
+            setIsSubmitting(true);
+            try {
+                const response = await axios.post("/api/auth/register", formData);
+                if (response.status === 201) {
+                    router.push("/login");
+                }
+            } catch (error: any) {
+                if (error.response && error.response.data) {
+                    setErrors({ email: error.response.data.message });
+                } else {
+                    setErrors({ email: "An unexpected error occurred" });
+                }
+            } finally {
+                setIsSubmitting(false);
+            }
         }
     };
 
@@ -121,8 +137,9 @@ const SignUpForm = () => {
                 <button
                     type="submit"
                     className="w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-lg transition-colors duration-300"
+                    disabled={isSubmitting}
                 >
-                    Sign Up
+                    {isSubmitting ? "Registering..." : "Sign Up"}
                 </button>
             </form>
         </div>

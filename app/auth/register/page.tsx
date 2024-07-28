@@ -1,4 +1,4 @@
-import SignUpForm from '@/app/(components)/signup';
+import SignUpForm from '@/app/(components)/auth/signup';
 import Head from 'next/head';
 
 

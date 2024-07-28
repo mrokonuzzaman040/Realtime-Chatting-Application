@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, ChangeEvent, FormEvent } from "react";
+import Link from "next/link";
+import { signIn } from "next-auth/react";
 
 interface LoginFormData {
-    identifier: string; // This will be used for username or email
+    identifier: string;
     password: string;
 }
 
@@ -34,15 +36,25 @@ const LoginForm = () => {
         return formErrors;
     };
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const validationErrors = validateForm();
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
         } else {
-            // Submit the form (e.g., send data to API)
-            console.log("Form data submitted:", formData);
-            setErrors({});
+            const result = await signIn("credentials", {
+                redirect: false,
+                username: formData.identifier,
+                email: formData.identifier,
+                password: formData.password,
+            });
+
+            if (result?.error) {
+                setErrors({ identifier: result.error });
+            } else {
+                setErrors({});
+                // Redirect to a protected route, e.g., dashboard
+            }
         }
     };
 
@@ -84,6 +96,11 @@ const LoginForm = () => {
                 >
                     Log In
                 </button>
+                <div className="text-center">
+                    <Link href="/forgot-password" className="text-cyan-500 hover:underline">
+                        Forgot Password?
+                    </Link>
+                </div>
             </form>
         </div>
     );
