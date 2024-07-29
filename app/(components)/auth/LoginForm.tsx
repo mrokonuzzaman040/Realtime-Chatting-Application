@@ -3,6 +3,7 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface LoginFormData {
     identifier: string;
@@ -21,6 +22,8 @@ const LoginForm = () => {
     });
 
     const [errors, setErrors] = useState<LoginFormErrors>({});
+    const [loading, setLoading] = useState<boolean>(false);
+    const router = useRouter();
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setFormData({
@@ -42,18 +45,19 @@ const LoginForm = () => {
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
         } else {
+            setLoading(true);
             const result = await signIn("credentials", {
                 redirect: false,
-                username: formData.identifier,
-                email: formData.identifier,
+                identifier: formData.identifier,
                 password: formData.password,
             });
 
+            setLoading(false);
             if (result?.error) {
                 setErrors({ identifier: result.error });
             } else {
                 setErrors({});
-                // Redirect to a protected route, e.g., dashboard
+                router.push("/chat"); // Redirect to a protected route
             }
         }
     };
@@ -92,9 +96,10 @@ const LoginForm = () => {
                 </div>
                 <button
                     type="submit"
-                    className="w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-lg transition-colors duration-300"
+                    className={`w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-lg transition-colors duration-300 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                    disabled={loading}
                 >
-                    Log In
+                    {loading ? "Logging in..." : "Log In"}
                 </button>
                 <div className="text-center">
                     <Link href="/forgot-password" className="text-cyan-500 hover:underline">

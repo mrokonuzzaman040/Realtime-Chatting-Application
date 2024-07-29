@@ -58,11 +58,7 @@ export async function POST(req: Request) {
     },
   });
   try {
-    console.log("Before save:", data.toObject());
-
     const savedUser = await data.save();
-
-    console.log("After save:", savedUser.toObject());
 
     // Send verification email
     const transporter = nodemailer.createTransport({
