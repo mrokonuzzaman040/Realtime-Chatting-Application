@@ -44,7 +44,7 @@ const SignUpForm = () => {
         } else {
             setIsSubmitting(true);
             try {
-                const response = await axios.post("/api/auth/register", formData);
+                const response = await axios.post("/api/v2/register", formData);
                 if (response.status === 201) {
                     router.push("/auth/sign-in");
                 }
